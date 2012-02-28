@@ -1,0 +1,12 @@
+mindex - A Homebrew Media Index
+
+Copyright © 2012 Frank Joseph Greer
+
+This isn't finished yet, but if you want to run the database test
+type 
+$ make test
+
+to clean type:
+$ make all-clean
+
+This program requires sqlite3 to build.
