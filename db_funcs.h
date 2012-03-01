@@ -149,5 +149,6 @@ int pretty_dump  (const char* file);
 const char* medium_string(medium_t type);
 const char* genre_string(genre_t genre);
 const char* error_string(int err);
+const char* time_string(time_t time);
 
 #endif /* __DB_FUNCS_H__ */

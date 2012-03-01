@@ -71,5 +71,8 @@ void reset_default_status(mindex_t* mindex);
 GtkListStore* load_main();
 GtkListStore* load_books();
 GtkListStore* load_movies();
+void setup_tree_main();
+void setup_tree_books();
+void setup_tree_movies();
 
 #endif

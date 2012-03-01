@@ -91,7 +91,7 @@ gboolean init_app(mindex_t* mindex) {
   gtk_builder_connect_signals(builder, mindex);
 
   /* free gtkBuilder */
-  g_object_unref(G_OBJET(builder));
+  g_object_unref(G_OBJECT(builder));
 
   /* set default icon to the GTK "index" icon */
   gtk_window_set_default_icon_name(GTK_STOCK_INDEX);
@@ -193,35 +193,169 @@ void reset_default_status(mindex_t* mindex) {
 
 GtkListStore* load_main() {
   GtkListStore* main;
-  GtkTreeIter* iter;
+  GtkTreeIter iter;
   media_t* media;
-  uint32_t* num_results;
+  uint32_t num_results;
   int retval;
-
-  /* create the object */
-  main = gtk_list_store_new(5,              /* columns */
-			    G_TYPE_INT,     /* code */
-			    G_TYPE_STRING,  /* type */
-			    G_TYPE_STRING,  /* name */
-			    G_TYPE_STRING,  /* location */
-			    G_TYPE_STRING); /* update */
-
-  /* aquire an iterator */
-  gtk_tree_store_append(main, &iter, NULL);
 
   /* load the media */
   retval = search(media, &num_results, NULL);
 
-  if (retval == MI_NO_RESULTS) {
-    /* no results, new database? */
-    g_free(G_OBJECT(iter));
-    return main;
-  }
-  else if (retval != MI_EXIT_OK) {
+  if (retval == MI_EXIT_ERROR) {
     error_message("An error occured, please check your logs");
-    g_free(G_OBJECT(iter));
-    g_free(G_OBJECT(main));
     return NULL;
   }
 
+  /* create the object */
+  main = gtk_list_store_new(5,              /* columns  */
+			    G_TYPE_INT,     /* code     */
+			    G_TYPE_STRING,  /* type     */
+			    G_TYPE_STRING,  /* name     */
+			    G_TYPE_STRING,  /* location */
+			    G_TYPE_STRING); /* update   */
+
   for (int i = 0; i < num_results; i++) {
+    gtk_list_store_append(main, &iter);
+    gtk_list_store_set(main, &iter,
+		       0, media[i].code,
+		       1, medium_string(media[i].type),
+		       2, media[i].name,
+		       3, media[i].location,
+		       4, time_string(media[i].update),
+		       -1);
+  }
+
+  free(media);
+  return main;
+}
+
+GtkListStore* load_books() {
+  GtkListStore* books;
+  GtkTreeIter iter;
+  book_t* book;
+  uint32_t num_results;
+  int retval;
+
+  /* load the books */
+  retval = search_books(book, &num_results, NULL);
+
+  if (retval == MI_EXIT_ERROR) {
+    error_message("An error occured, please check your logs");
+    return NULL;
+  }
+
+  /* create the object */
+  books = gtk_list_store_new(8,              /* columns      */
+			     G_TYPE_INT,     /* code         */
+			     G_TYPE_STRING,  /* type         */
+			     G_TYPE_STRING,  /* genre        */
+			     G_TYPE_STRING,  /* isbn         */
+			     G_TYPE_STRING,  /* title        */
+			     G_TYPE_STRING,  /* author_last  */
+			     G_TYPE_STRING,  /* author_first */
+			     G_TYPE_STRING); /* author_rest  */
+
+  for (int i = 0; i < num_results; i++) {
+    gtk_list_store_append(books, &iter);
+    gkt_list_store_set(books, &iter,
+		       0, book[i].code,
+		       1, medium_string(book[i].type),
+		       2, genre_string(book[i].genre),
+		       3, book[i].isbn,
+		       4, book[i].title,
+		       5, book[i].author_last,
+		       6, book[i].author_first,
+		       7, book[i].author_rest,
+		       -1);
+  }
+
+  free(book);
+  return books;
+}
+
+GtkListStore* load_movies() {
+  GtkListStore* movies;
+  GtkTreeiter iter;
+  movie_t* movie;
+  uint32_t num_results;
+  int retval;
+
+  /* load the movies */
+  retval = search_movies(movie, &num_results, NULL);
+
+  if (retval == MI_EXIT_ERROR) {
+    error_message("An error occured, please check your logs");
+    return NULL;
+  }
+
+  /* create the object */
+  movies = gtk_list_store_new(7,             /* columns  */
+			      G_TYPE_INT,    /* code     */
+			      G_TYPE_STRING, /* type     */
+			      G_TYPE_STRING, /* genre    */
+			      G_TYPE_STRING, /* title    */
+			      G_TYPE_STRING, /* director */
+			      G_TYPE_STRING, /* studio   */
+			      G_TYPE_INT);   /* rating   */
+
+  for (int i = 0; i < num_results, i++) {
+    gtk_list_store_append(movies, &iter);
+    gtk_list_store_set(movies, &iter,
+		       0, movie[i].code,
+		       1, medium_string(movie[i].type),
+		       2, genre_string(movie[i].genre),
+		       3, movie[i].title,
+		       4, movie[i].director,
+		       5, movie[i].studio,
+		       6, movie[i].rating,
+		       -1);
+  }
+
+  free(movie);
+  return movies;
+}
+/*
+void setup_tree_main() {
+  GtkTreeViewColumn* column;
+  GtkCellRenderer* renderer = gtk_cell_renderer_text_new();
+
+  column = gtk_tree_view_column_new_with_attributes("Code", renderer,
+						    "text", 0,
+						    NULL);
+}
+*/
+/* window callback functions */
+void on_window_destroy(GObject* object, mindex_t* mindex) {
+  gtk_main_quit();
+}
+
+gboolean on_window_delete_event(GtkWidget* widget, GdkEvent* event, mindex_t* mindex) {
+  return FALSE;
+}
+
+void on_main_tree_selection_changed(GtkTreeSelection *selection, mindex_t* mindex) {
+  log_debug(TODO, "on_main_tree_selection_changed_not_implemented");
+}
+
+/* file menu callback functions */
+void on_open_menu_item_activate(GtkMenuItem *menuitem, mindex_t* mindex) {
+  gchar* filename;
+
+  filename = get_open_filename(mindex);
+
+  if (filename != NULL) {
+    gtk_tree_view_set_model(mindex->tree_view, NULL);
+  
+    /* check for existing data */
+    if (mindex->main != NULL) g_object_unref(G_OBJECT(mindex->main));
+    if (mindex->books != NULL) g_object_unref(G_OBJECT(mindex->books));
+    if (mindex->movies != NULL) g_object_unref(G_OBJECT(mindex->movies));
+
+    /* load new data */
+    load_database(mindex, filename);
+
+    /* display tree view */
+    gtk_tree_view_set_model(mindex->tree_view, mindex->main);
+    setup_tree_main();
+  }
+}

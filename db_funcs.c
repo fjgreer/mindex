@@ -1282,7 +1282,6 @@ int pretty_dump(const char* file) {
   media_t mtemp;
   book_t btemp;
   movie_t vtemp;
-  struct tm* time_tmp;
   time_t cur_time;
 
   if (sqlite3_prepare_v2(db_handle,"SELECT * FROM main",-1,&main_query,NULL) != SQLITE_OK) {
@@ -1322,9 +1321,7 @@ int pretty_dump(const char* file) {
   log_debug(INFO,"pretty_dump(): beginning main table dump");
   cur_time = time(NULL);
   fprintf(out,"mindex dump main\n");
-  time_tmp = gmtime(&cur_time);
-  strftime(buffer,sizeof(buffer), "%F @ %T %Z", time_tmp);
-  fprintf(out,"%s\n",buffer);
+  fprintf(out,"%s\n",time_string(cur_time));
   fprintf(out,"---begin---\n");
    
   log_debug(INFO,"pretty_dump(): processing rows main");
@@ -1342,9 +1339,7 @@ int pretty_dump(const char* file) {
       fprintf(out,"#%u: %s\n",mtemp.code,mtemp.name);
       fprintf(out,"\tType:        %s\n",medium_string(mtemp.type));
       fprintf(out,"\tLocation:    %s\n",mtemp.location);
-      time_tmp = gmtime(&mtemp.update);
-      strftime(buffer,sizeof(buffer), "%F @ %T %Z", time_tmp);
-      fprintf(out,"\tLast Update: %s\n\n",buffer);
+      fprintf(out,"\tLast Update: %s\n\n",time_string(&mtemp.update));
 
       sprintf(buffer,"pretty_dump(): output row %d",count);
       log_debug(INFO,buffer);
@@ -1379,9 +1374,7 @@ int pretty_dump(const char* file) {
   log_debug(INFO,"pretty_dump(): beginning book table dump");
 
   fprintf(out,"mindex dump book\n");
-  time_tmp = gmtime(&cur_time);
-  strftime(buffer,sizeof(buffer), "%F @ %T %Z", time_tmp);
-  fprintf(out,"%s\n",buffer);
+  fprintf(out,"%s\n",time_string(cur_time));
   fprintf(out,"---begin---\n");
    
   log_debug(INFO,"pretty_dump(): processing rows book");
@@ -1438,9 +1431,7 @@ int pretty_dump(const char* file) {
   log_debug(INFO,"pretty_dump(): beginning movie table dump");
 
   fprintf(out,"mindex dump movie\n");
-  time_tmp = gmtime(&cur_time);
-  strftime(buffer,sizeof(buffer), "%F @ %T %Z", time_tmp);
-  fprintf(out,"%s\n",buffer);
+  fprintf(out,"%s\n",time_string(cur_time));
   fprintf(out,"---begin---\n");
    
   log_debug(INFO,"pretty_dump(): processing rows movie");
@@ -1492,4 +1483,14 @@ int pretty_dump(const char* file) {
   /* end movie dump */
 
   return MI_EXIT_OK;
+}
+
+const char* time_string(time_t time) {
+  struct tm* time_tmp;
+  static char buffer[50];
+
+  time_tmp = gmtime(&time);
+  strftime(buffer,sizeof(buffer), "%F @ %T %Z", time_tmp);
+
+  return buffer;
 }
