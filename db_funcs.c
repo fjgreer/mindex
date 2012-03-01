@@ -490,17 +490,17 @@ int search(media_t* items, uint32_t* num_results, const char* terms) {
   uint32_t count;
 
   if (terms == NULL) {
-    log_debug(ERROR,"search(): not allowed to search all media");
-    return MI_EXIT_ERROR;
+    strcpy(buffer, "SELECT COUNT(*) FROM main");
   }
+  else {
+    if ((sizeof(buffer)-50) < sizeof(terms)) {
+      log_debug(ERROR,"search(): terms exceeds buffer");
+      return MI_EXIT_ERROR;
+    }
 
-  if ((sizeof(buffer)-50) < sizeof(terms)) {
-    log_debug(ERROR,"search(): terms exceeds buffer");
-    return MI_EXIT_ERROR;
+    strcpy(buffer, "SELECT COUNT(*) FROM main WHERE ");
+    strcat(buffer, terms);
   }
-
-  strcpy(buffer, "SELECT COUNT(*) FROM main WHERE ");
-  strcat(buffer, terms);
 
   log_debug(INFO,"search(): starting query");
   log_debug(INFO,buffer);
@@ -532,8 +532,13 @@ int search(media_t* items, uint32_t* num_results, const char* terms) {
     return MI_NO_RESULTS;
   }
 
-  strcpy(buffer, "SELECT * FROM main WHERE ");
-  strcat(buffer, terms);
+  if (terms == NULL) {
+    strcpy(buffer, "SELECT * FROM main");
+  }
+  else {
+    strcpy(buffer, "SELECT * FROM main WHERE ");
+    strcat(buffer, terms);
+  }
 
   log_debug(INFO,"search(): starting query");
   log_debug(INFO,buffer);
@@ -594,17 +599,17 @@ int search_books(book_t* items, uint32_t* num_results, const char* terms) {
   uint32_t count;
 
   if (terms == NULL) {
-    log_debug(ERROR,"search_books(): not allowed to search all media");
-    return MI_EXIT_ERROR;
+    strcpy(buffer, "SELECT COUNT(*) FROM books");
   }
+  else {
+    if ((sizeof(buffer)-50) < sizeof(terms)) {
+      log_debug(ERROR,"search_books(): terms exceeds buffer");
+      return MI_EXIT_ERROR;
+    }
 
-  if ((sizeof(buffer)-50) < sizeof(terms)) {
-    log_debug(ERROR,"search_books(): terms exceeds buffer");
-    return MI_EXIT_ERROR;
+    strcpy(buffer, "SELECT COUNT(*) FROM books WHERE ");
+    strcat(buffer, terms);
   }
-
-  strcpy(buffer, "SELECT COUNT(*) FROM books WHERE ");
-  strcat(buffer, terms);
 
   log_debug(INFO,"search_books(): starting query");
   log_debug(INFO,buffer);
@@ -636,8 +641,13 @@ int search_books(book_t* items, uint32_t* num_results, const char* terms) {
     return MI_NO_RESULTS;
   }
 
-  strcpy(buffer, "SELECT * FROM books WHERE ");
-  strcat(buffer, terms);
+  if (terms == NULL) {
+    strcpy(buffer, "SELECT * FROM books");
+  }
+  else {
+    strcpy(buffer, "SELECT * FROM books WHERE ");
+    strcat(buffer, terms);
+  }
 
   log_debug(INFO,"search_books(): starting query");
   log_debug(INFO,buffer);
@@ -701,17 +711,17 @@ int search_movies(movie_t* items, uint32_t* num_results, const char* terms) {
   uint32_t count;
 
   if (terms == NULL) {
-    log_debug(ERROR,"search_movies(): not allowed to search all media");
-    return MI_EXIT_ERROR;
+    strcpy(buffer, "SELECT COUNT(*) FROM movies");
   }
+  else {
+    if ((sizeof(buffer)-50) < sizeof(terms)) {
+      log_debug(ERROR,"search_movies(): terms exceeds buffer");
+      return MI_EXIT_ERROR;
+    }
 
-  if ((sizeof(buffer)-50) < sizeof(terms)) {
-    log_debug(ERROR,"search_movies(): terms exceeds buffer");
-    return MI_EXIT_ERROR;
+    strcpy(buffer, "SELECT COUNT(*) FROM movies WHERE ");
+    strcat(buffer, terms);
   }
-
-  strcpy(buffer, "SELECT COUNT(*) FROM movies WHERE ");
-  strcat(buffer, terms);
 
   log_debug(INFO,"search_movies(): starting query");
   log_debug(INFO,buffer);
@@ -743,8 +753,13 @@ int search_movies(movie_t* items, uint32_t* num_results, const char* terms) {
     return MI_NO_RESULTS;
   }
 
-  strcpy(buffer, "SELECT * FROM movies WHERE ");
-  strcat(buffer, terms);
+  if (terms == NULL) {
+    strpcy(buffer, "SELECT * FROM movies");
+  }
+  else {
+    strcpy(buffer, "SELECT * FROM movies WHERE ");
+    strcat(buffer, terms);
+  }
 
   log_debug(INFO,"search_movies(): starting query");
   log_debug(INFO,buffer);
